@@ -25,7 +25,7 @@
 function WAPvars = rd_wap_amt(flowdir, filename, fileext, dh8_instruments, dh8_ports)
 
    %global din
-  
+
    tic
    %disp(' ')
    %disp(['WAP extracted processing started ' datestr(now)])
@@ -60,14 +60,8 @@ function WAPvars = rd_wap_amt(flowdir, filename, fileext, dh8_instruments, dh8_p
       endif
       % Add to output variable
       WAPvars.flow = flow;
-      
    catch
        disp('No flow data');
-       [tmp_flow] = deal([]) ; # tjor - lines 66-71 - were added when backprocessing AMT27 - this allows for case of `no-flow'
-       flow.time = [];         # data to be accounted for.
-       flow.Hz = [];        
-       flow.valve = [];
-       WAPvars.flow = flow;
        # keyboard
    end_try_catch
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -165,12 +159,14 @@ function WAPvars = rd_wap_amt(flowdir, filename, fileext, dh8_instruments, dh8_p
                % file.
 
                % Read the ac-s ascii data
+           
                fn_acs = ls([filename acsname '.' fileext]);
                if exist(fn_acs)
                    [msec_acs,craw,araw,cwl,awl,anc,c_cal,a_cal,c_T_cal,a_T_cal,T_bins] = rd_acs([fn_acs]);
                else
                    [msec_acs,craw,araw,cwl,awl,anc,c_cal,a_cal,c_T_cal,a_T_cal,T_bins] = deal([]);
                endif
+            #   keyboard
 
            case 'acs2'
                acsname2 = ['_2',port,'_ACS'];
@@ -178,10 +174,10 @@ function WAPvars = rd_wap_amt(flowdir, filename, fileext, dh8_instruments, dh8_p
                % port 21 is an "AC-S" type (and providing its dev file) will 
                % extract the binary acs data and write out a wetview style ascii 
                % file.
-
+   # keyboard
                % Read the ac-s ascii data
                fn_acs2 = ls([filename acsname2 '.' fileext]);
-               if exist(fn_acs)
+               if exist(fn_acs2)
                   [msec_acs2,craw2,araw2,cwl2,awl2,anc2,c_cal2,a_cal2,c_T_cal2,a_T_cal2,T_bins2] = rd_acs(fn_acs2);
                else
                   [msec_acs2,craw2,araw2,cwl2,awl2,anc2,c_cal2,a_cal2,c_T_cal2,a_T_cal2,T_bins2] = deal([]);
@@ -240,20 +236,26 @@ function WAPvars = rd_wap_amt(flowdir, filename, fileext, dh8_instruments, dh8_p
       pctime0 = pctime(1);
       pctime1 = pctime(end);
 
+
    else
       disp('No time from DH8, need to read it from somewhere else')
-      keyboard
-      pctime_minus_bb349time = datenum([00 00 00 6 42 27]) ;
+      #  keyboard
+      # pctime_minus_bb349time = datenum([00 00 00 00 00 00]) ;
+      #pctime_minus_bb349time = datenum([00 00 00 6 42 27]) ;
+      pctime_minus_bb349time = datenum([00 00 00 7 59 39]); # 
+      #pctime_minus_bb349time = datenum([00 00 00 00 20 00]) ;
 
       pctime_from_bb349 =  time_bb3_old + pctime_minus_bb349time;  % corrects bb349 time based on mean difference computed from bb3time_2_pctime.m
 
       p = polyfit(msec_bb3_old, pctime_from_bb349, 1);
 
       pctime0 = polyval(p, 0);
-      pctime1 = 60*60*1000;  %this is the nyumber of msec in one hour
+      pctime1 = 60*60*1000;  %this is the number of msec in one hour
+
+      pctime = pctime_from_bb349; # re-define, so can be saved in WAP vars
 
    endif
-
+  
 
    %disp(['  Logging start (pc time) was ' datestr(pctime0)]);
    %disp(['  Logging end (pc time) was ' datestr(pctime1)]);

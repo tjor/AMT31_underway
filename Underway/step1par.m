@@ -1,7 +1,7 @@
 function step1par(jday)
 
    % Load paths and common variables
-   # run('input_parameters.m') 
+   # run('input_parameters.m')
    run('../input_parameters.m')
 
    din = [PATH_DATA UWAY_DIR];
@@ -36,8 +36,8 @@ function step1par(jday)
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
    %fn1 = [lower(CRUISE) '_*' doy ];  %needed for reading the wapfiles in the next loop below
-   fn1 = [WAP_ROOT '_*' doy  ];  % needed for reading the wapfiles in the next loop below - accounts for caseb
-
+   #fn1 = [WAP_ROOT '_*' doy  ];  % needed for reading the wapfiles in the next loop below - accounts for caseb
+   fn1 = [WAP_ROOT '*' doy  ];  % ne
 
    % fflush(stdout);
 
@@ -48,8 +48,8 @@ function step1par(jday)
    for iwp = 1:size(wp,1)
       [token, remainder] = strtok(wp(iwp).name,'.');
       wapfiles{iwp,1} = fn1
-      wapfiles{iwp,2} = strtok(remainder,'.');  
-      
+      wapfiles{iwp,2} = strtok(remainder,'.');
+
       % exception to handle two file names on the same day when we swapped ac9 with cstar
       %   ddd = str2num(doy);
       %   HHH = str2num(strtok(remainder,'.'));
@@ -60,16 +60,16 @@ function step1par(jday)
    endfor
 
    %---GRG----
-   
+
    % Initialize variables based on dh8_instruments
    for idh8 = 1:length(dh8_instruments)
-       % create structures where data will be stored for all instruments		
-       switch dh8_instruments{idh8} 
+       % create structures where data will be stored for all instruments
+       switch dh8_instruments{idh8}
            case 'acs'
                %-------------------------------------
                % TO DO: MOVE INTO input_parameters
                % Read number of acs wavelengths from calibration file
-	       acsNoWL = get_acs_NoWL(D_CAL_FILES, ACS_CAL_FILE_NAME);   
+               acsNoWL = get_acs_NoWL(D_CAL_FILES, ACS_CAL_FILE_NAME);
                %-------------------------------------
                acs.raw = bindata_new(strdate, acsNoWL*2);
                acs.anc = bindata_new(strdate, 5);
@@ -78,7 +78,7 @@ function step1par(jday)
                % TO DO: MOVE INTO input_parameters
                % Read from calibration file
                %-------------------------------------
-               acsNoWL2 = get_acs_NoWL(D_CAL_FILES, ACS_CAL_FILE_NAME);   	
+               acsNoWL2 = get_acs_NoWL(D_CAL_FILES, ACS_CAL_FILE_NAME);
                acs2.raw = bindata_new(strdate, acsNoWL2*2);
                acs2.anc = bindata_new(strdate, 5);
            case 'ac9'
@@ -116,7 +116,7 @@ function step1par(jday)
       % And save each variable to the variable to save
       for idh8 = 1:length(dh8_instruments)
           % create structures where data will be stored for all instruments
-          switch dh8_instruments{idh8} 
+          switch dh8_instruments{idh8}
 
               case 'cstar'
                  tmp_cstar = tmp_WAPvars.cstar;
@@ -129,7 +129,7 @@ function step1par(jday)
                  % Save to output var
                  WAPvars.ctd = ctd;
 
-              case 'ac9' 
+              case 'ac9'
                   tmp_ac9 = tmp_WAPvars.ac9;
                   ac9.wv = tmp_ac9.wv;
                   ac9.time = tmp_ac9.time;
@@ -137,10 +137,10 @@ function step1par(jday)
                  % Save to output var
                  WAPvars.ac9 = ac9;
 
-              case 'acs' 
+              case 'acs'
                   tmp_acs = tmp_WAPvars.acs;
                   % AC-S
-                  acs.awl = tmp_acs.awl;  
+                  acs.awl = tmp_acs.awl;
                   acs.cwl = tmp_acs.cwl;
                   acs.a_cal = tmp_acs.a_cal;
                   acs.c_cal = tmp_acs.c_cal;
@@ -149,13 +149,14 @@ function step1par(jday)
                   acs.T_bins = tmp_acs.T_bins;
                   acs.anc = bindata_merge(acs.anc, tmp_acs.time, tmp_acs.anc);
                   acs.raw = bindata_merge(acs.raw, tmp_acs.time, tmp_acs.raw(:,:));
+
                  % Save to output var
                  WAPvars.acs = acs;
 
-              case 'acs2' 
+              case 'acs2'
                   tmp_acs2 = tmp_WAPvars.acs2;
                   % AC-S
-                  acs2.awl = tmp_acs2.awl;  
+                  acs2.awl = tmp_acs2.awl;
                   acs2.cwl = tmp_acs2.cwl;
                   acs2.a_cal = tmp_acs2.a_cal;
                   acs2.c_cal = tmp_acs2.c_cal;
@@ -200,7 +201,7 @@ function step1par(jday)
 
     endfor
 
-    
+
     clear ihour
     % ------------------------------------------------------------------------
     % Save data to MAT file for future use
@@ -220,7 +221,7 @@ function step1par(jday)
     disp('Done!')
 
     % ------------------------------------------------------------------------
-    % In case UWAY_WAP_SUBDIR is not the root directory, core measurements need 
+    % In case UWAY_WAP_SUBDIR is not the root directory, core measurements need
     % to be also saved on root directory
     %-------------------------------------------------------------------------
    % if ~strcmp(UWAY_WAP_SUBDIR,'/')
@@ -249,6 +250,6 @@ function step1par(jday)
     %endif
 
     clear wapfiles
-    
+
 
 endfunction
