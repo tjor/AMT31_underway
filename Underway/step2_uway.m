@@ -1,13 +1,13 @@
 %function tmp = step2_uway();
    % Compute bio-physical quantities (IOPs) from (uncallibrated) optical data
- 
+
    clear all
    PLOT = 1;
 
    % Load paths and common variables
    #run("input_parameters.m")
    run("../input_parameters.m")
-   
+
 
    global OUT_PROC # this is for plot_spectra2.m
    global UWAY_DIR
@@ -16,10 +16,10 @@
    [numdates, strdates, vecdates, jday_in] = get_date_range(inidate,enddate);
 
    fn_saved = glob([DIR_STEP1 "*mat"]);
-   
+
    global YYYY = vecdates(1, 1); % Assumes all AMT days are within same year!! % used as processing Id
 
-   % Change first day to process more than just last sampled day 
+   % Change first day to process more than just last sampled day
    first_day = find_index_strdate_in_glob(fn_saved, sprintf("%d", jday_in(1))); % follows from ini and end dates
    last_day = find_index_strdate_in_glob(fn_saved, sprintf("%d", jday_in(end)));
 
@@ -29,39 +29,39 @@
    endfor
 
    dailyfiles = dir(  [DIR_STEP1 "*mat"]  ); % redundancy with line 27? (just different format)
-  
+
    for iday = first_day: last_day
-   
+
         disp(["\n---------" dailyfiles(iday).name "--------\n"] )
         fflush(stdout);
 
-
+      #  keyboard
 
        # initialize output structure with nans
            ini_out(dailyfiles(iday).name, jdays(iday));
 
         % First process Ship ctd data
         % (needed by bb3 processing)
-        disp("\nprocessing SHIPs UNDERWAY data...");  
-	
+        disp("\nprocessing SHIPs UNDERWAY data...");
+
 	% Discovery version of underway function (e.g. AMT27)
 
-        uway = step2h_underway_discovery_make_processed(jdays(iday), strdates(iday,:),\
-                FUNC_GGA, \
-                DIR_GPS, FN_GPS, \
-                DIR_ATT, FN_ATT, \
-                DIR_DEPTH, FN_DEPTH,\
-                DIR_TS, FN_SURF, FN_METDATA, FN_LIGHT,\
+        uway = step2h_underway_discovery_make_processed(jdays(iday), strdates(iday,:),
+                FUNC_GGA,
+                DIR_GPS, FN_GPS,
+                DIR_ATT, FN_ATT,
+                DIR_DEPTH, FN_DEPTH,
+                DIR_TS, FN_SURF, FN_METDATA, FN_LIGHT,
                 DIR_TSG, FN_TSG);
-         
+
        #  keyboard
 
-       %  JCR version of underway function (e.g. AMT28)     
+       %  JCR version of underway function (e.g. AMT28)
        % uway = step2h_ships_underway_amt_make_processed(jdays(iday), \
         %        DIR_GPS, GLOB_GPS, FN_GPS, FNC_GPS, \
          %       DIR_METDATA, GLOB_METDATA, FN_METDATA, FNC_METDATA)  ;%
-        disp("...done"); 
-        
+        disp("...done");
+
 
         jday_str = dailyfiles(iday).name(end-6:end-4);
 
@@ -71,9 +71,9 @@
 
         % Idea is that flow is always there
         % (also needed by ac9 processing)
-        disp("processing Flow data...");  
+        disp("processing Flow data...");
         flow = step2f_flow_make_processed(WAPvars.flow, dailyfiles(iday));
-        disp("...done"); 
+        disp("...done");
 
         % Cycle through the variables within WAPvars
         instruments = fieldnames(WAPvars);
@@ -90,7 +90,7 @@
 
                case "acs2"
                    step2a_acs_amt_make_processed(WAPvars.acs2, dailyfiles(iday), iday, acs_lim, FORCE=0, "acs2"); % tjor: was not tested for acs2 on AMT 28
-       
+
                case "ac9"
                    step2a_ac9_amt_make_processed(WAPvars.ac9, dailyfiles(iday), ac9_lim, FORCE=0, flow);
 
@@ -118,7 +118,7 @@
        disp("\n");
        toc
    endfor
-  
+
  if PLOT == 1
    % Plot spectra from acs
    disp("\nplotting spectra...");

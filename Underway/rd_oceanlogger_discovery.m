@@ -1,22 +1,22 @@
 function tmp = rd_oceanlogger_discovery(fn_surf, fn_met, fn_light, fn_tsg)
-    
+
     # Function reads & combines meta data from 4 different files (surf, met, light, tsg) into a single stucture: tmp
-   
+
     # This function was modfied by tjor (Aug 2022) - key changes:
     # (i) function takes 4 separate filenames as input arguement
     # (ii) internal loops removed (previously function acted on set of files for cruise). Note: loops just act on element 1,
     # but keeps previous snytax to avoid any errors.
-    
-     
-    pkg load netcdf 
-    
+
+
+    pkg load netcdf
+
     % 1) surf
-    for inc = 1:1 % loop acts on element 1: 
+    for inc = 1:1 % loop acts on element 1:
         ncfile = fn_surf; # temporary variable
         if inc == 1
             % Assumes time is in dats (matlab format)
             tmp.time = ncread(ncfile,'time') + datenum([1899,12,30,0,0,0]);
-            tmp.flowrate = ncread(ncfile,'flow2'); % Instrument Flow Rate [l/mn]
+            tmp.flowrate = ncread(ncfile,'flow'); % Instrument Flow Rate [l/mn]
             tmp.fluo = ncread(ncfile,'fluo'); % Fluorescence [V]
             tmp.trans = ncread(ncfile,'trans'); % Transmissibility [V]
             % These are all 0; need to get them from TSG
@@ -28,7 +28,7 @@ function tmp = rd_oceanlogger_discovery(fn_surf, fn_met, fn_light, fn_tsg)
            % Add a NaN between the two series (so that interpolation leaves a gap)
            midtime = (_time(1)-tmp.time(end))/2;
            tmp.time = [tmp.time; tmp.time(end)+midtime; _time];
-           tmp.flowrate = [tmp.flowrate; NaN; ncread(ncfile,'flow2')];
+           tmp.flowrate = [tmp.flowrate; NaN; ncread(ncfile,'flow')];
            tmp.fluo = [tmp.fluo; NaN; ncread(ncfile,'fluo')];
            tmp.trans = [tmp.trans; NaN; ncread(ncfile,'trans')];
         endif
@@ -39,7 +39,7 @@ function tmp = rd_oceanlogger_discovery(fn_surf, fn_met, fn_light, fn_tsg)
         ncfile = fn_met; # temporary variable
         if inc == 1
             % tmp2.time = nc{'time'}(:)+datenum([1899,12,30,0,0,0]);
-            tmp.wind_vel = ncread(ncfile,'speed'); %WInd speed [m/s]    
+            tmp.wind_vel = ncread(ncfile,'speed'); %WInd speed [m/s]
             tmp.air_temp = ncread(ncfile,'airtemp'); % Air temp [degC]
             tmp.wind_dir = ncread(ncfile,'direct'); % Wind dir [deg]
             tmp.humidity = ncread(ncfile,'humid'); % Rel air humidity [%]
@@ -50,17 +50,17 @@ function tmp = rd_oceanlogger_discovery(fn_surf, fn_met, fn_light, fn_tsg)
            tmp.humidity = [tmp.humidity; NaN; ncread(ncfile,'humid')];
         endif
     endfor
-    
-    % 3) Light 
+
+    % 3) Light
     for inc = 1:1
         ncfile = fn_light; # temporary variable
         if inc == 1
             % tmp3.time = nc{'time'}(:)+datenum([1899,12,30,0,0,0]);
             tmp.baro = ncread(ncfile,'pres'); % Atmospheric pressure [mbar]
-            tmp.par1 = ncread(ncfile,'ppar'); % Port PAR [volt x 10-4] 
+            tmp.par1 = ncread(ncfile,'ppar'); % Port PAR [volt x 10-4]
             tmp.tir1 = ncread(ncfile,'ptir'); % port total irradiance [volt x 10-4]
-            tmp.par2 = ncread(ncfile,'spar'); % Starboard PAR [volt x 10-4] 
-            tmp.tir2 = ncread(ncfile,'stir'); % Starboard total irradiance [volt x 10-4] 
+            tmp.par2 = ncread(ncfile,'spar'); % Starboard PAR [volt x 10-4]
+            tmp.tir2 = ncread(ncfile,'stir'); % Starboard total irradiance [volt x 10-4]
         else
            tmp.baro = [tmp.baro; NaN; ncread(ncfile,'pres')];
            tmp.par1 = [tmp.par1; NaN; ncread(ncfile,'ppar')];
@@ -69,10 +69,10 @@ function tmp = rd_oceanlogger_discovery(fn_surf, fn_met, fn_light, fn_tsg)
            tmp.tir2 = [tmp.tir2; NaN; ncread(ncfile,'stir')];
         endif
     endfor
-    
-    % 4) TSG (different time => need interpolation) 
+
+    % 4) TSG (different time => need interpolation)
     for inc = 1:1
-        ncfile = fn_tsg;  
+        ncfile = fn_tsg;
         if inc == 1
             tmp2.time = ncread(ncfile,'time') + datenum([1899,12,30,0,0,0]);
             tmp2.sal = ncread(ncfile,'salin'); % TSG salinity
