@@ -51,6 +51,7 @@ amt_optics.acs.cp    = [];
 amt_optics.acs.cp_u  = [];
 amt_optics.acs.N     = [];
 amt_optics.acs.time  = [];
+amt_optics.acs.wv   = [];
 
 % acs 2
 amt_optics.acs2.chl   = [];
@@ -62,6 +63,7 @@ amt_optics.acs2.cp    = [];
 amt_optics.acs2.cp_u  = [];
 amt_optics.acs2.N     = [];
 amt_optics.acs2.time  = [];
+amt_optics.acs2.wv   = [];
 
 % ac9
 amt_optics.ac9.chl   = [];
@@ -173,7 +175,7 @@ for ifn = 1:size(fn,1)
         amt_optics.acs.bp_u   = [amt_optics.acs.bp_u;   out.acs.bp_u];
         amt_optics.acs.cp_u   = [amt_optics.acs.cp_u;   out.acs.cp_u];
         amt_optics.acs.N      = [amt_optics.acs.N;   out.acs.N];
-        amt_optics.acs.wv   = [acs_wv];
+        amt_optics.acs.wv   = [out.acs.wv];
     else
         disp('acs do not exist in file')
 
@@ -187,6 +189,7 @@ for ifn = 1:size(fn,1)
         amt_optics.acs.cp_u   = [amt_optics.acs.cp_u; nan*ones(176,1440)'];
         amt_optics.acs.N      = [amt_optics.acs.N; nan*ones(1,1440)'];
 
+        amt_optics.acs.wv   = [out.acs.wv];
     endif
 
         % Check if acs variable exists
@@ -202,7 +205,7 @@ for ifn = 1:size(fn,1)
         amt_optics.acs2.cp_u   = [amt_optics.acs2.cp_u;   out.acs2.cp_u];
         amt_optics.acs2.N      = [amt_optics.acs2.N;   out.acs2.N];
 
-        amt_optics.acs2.wv   = [acs_wv];# ok to use acs1 wv as it is post-interpolation
+        amt_optics.acs2.wv   = [out.acs.wv];# ok to use acs1 wv as it is post-interpolation
 
     else
         disp('acs 2 do not exist in file')
@@ -216,7 +219,7 @@ for ifn = 1:size(fn,1)
         amt_optics.acs2.cp_u   =  [amt_optics.acs2.cp_u; nan*ones(176,1440)'];
         amt_optics.acs2.N      = [amt_optics.acs2.N; nan*ones(1,1440)'];
 
-        amt_optics.acs2.wv   = [acs_wv];# ok to u
+        amt_optics.acs2.wv   =  [out.acs.wv];# ok to u
 
     endif
 
