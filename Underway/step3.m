@@ -140,8 +140,7 @@ fn = dir([din "*mat"]);
 % - bb3
 % - cstar
 % - flow
-% Check each time if they are present or not among the file variablesi
-
+% Check each time if they are present or not among the file variablesiacs_2
 
 
 for ifn = 1:size(fn,1)
@@ -219,7 +218,7 @@ for ifn = 1:size(fn,1)
         amt_optics.acs2.cp_u   =  [amt_optics.acs2.cp_u; nan*ones(176,1440)'];
         amt_optics.acs2.N      = [amt_optics.acs2.N; nan*ones(1,1440)'];
 
-        amt_optics.acs2.wv   =  [out.acs.wv];# ok to u
+       amt_optics.acs2.wv   =  [out.acs.wv]; #
 
     endif
 
@@ -309,12 +308,11 @@ for ifn = 1:size(fn,1)
 
 endfor
 
-
+#keyboard
 %stop  % <-----------------    uncomment this stop before using remove_bbp_noise.m
 
 % Get current year from inidate
 t0 = y0(str2num(inidate(1:4)));
-
 
 amt_optics.time = amt_optics.acs.time + t0; %
 amt_optics.acs.time = amt_optics.acs.time + t0 ;%
@@ -377,14 +375,13 @@ save('-v6', [DIR_STEP3 lower(CRUISE) '_optics.mat'], lower(CRUISE))
 %  out = [amt_optics.time-t0 amt_optics.undwy.lat amt_optics.undwy.lon amt_optics.acs.ap(:,wv532) amt_optics.acs.cp(:,wv532) amt_optics.bb3.bbp(:,2)];
 %  save -ascii surface_optics_amt22.dat out
 
-
 figure
 plot(amt_optics.uway.time-t0+1, log10(abs(amt_optics.acs2.chl)))
 hold on
 plot(amt_optics.uway.time-t0+1, log10(abs(amt_optics.acs.chl)),'r')
-xlim([280,284])
+xlim([333,338])
 
-figure
+#figure
 plot(amt_optics.uway.lat, log10(abs(amt_optics.acs2.chl)))
 hold on
 plot(amt_optics.uway.lat, log10(abs(amt_optics.acs.chl)),'r')

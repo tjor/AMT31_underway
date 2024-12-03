@@ -1,5 +1,5 @@
 % This file contains all the variables that should be modified at beginning of every cruise
-% This is for onboard processing of AMT 31 in Nov/Dec 2024
+% This is for onboard processing of AMT 31 in Nov/Dec 2024 on RRS James Cook
 %-----------------------------
 
 struct_levels_to_print(0);
@@ -9,36 +9,33 @@ warning("off");
 graphics_toolkit("gnuplot");
 
 %-----------------------------
-#CRUISE = "amt31";
-CRUISE = "AMT31";
-WAP_ROOT = CRUISE; % tjor: `root" part of WAP file - capitals for DY151
+#CRUISE = "amt31"; # use for jday 333
+CRUISE = "AMT31";  # use for jday 334 onwards
+WAP_ROOT = CRUISE;
 
 %-----------------------------
 % Variables to be changed during cruise according to specific setups and user needs
 %
 % Dates
-% jday=141 (20220521) is first day of DY151 cruise
-% jday=174 (20220623) is final day of DY151 cruise
-
+% jday=333 (20241128) is first day of data collection on JC-272 cruise
 % Set subdirectories, ini/end dates and WAPhours - code is run by commenting/uncommenting each case
 
-% Step 1: `default' - run 1
-#UWAY_WAP_SUBDIR = "/"; % Leave with simple '/' if no special case
-#inidate = "20220523"; % jday=143 first day of default config. 1st WAP hour = 16
-#enddate = "20220622"; % jday=173 last full day of default config.
-#WAPhour = "016"; % tjor: `processes all days with 0XXth hour of data present"
+# Step 1: `ACS_both' -
+#UWAY_WAP_SUBDIR = "ACS_both/"; (167 in port 3 122 in port 4)
+#inidate = "20241128"; # Jday 333 is 28th Nov 2024
+#enddate = "20241128";
+#WAPhour = "15";
 
-#Step 1: `with_ACS167' - run 1
-UWAY_WAP_SUBDIR = "ACS_both/";
-inidate = "20241128"; # Jday 333 is 28th Nov 2024
-enddate = "20241128";
-WAPhour = "17";
+#
+#UWAY_WAP_SUBDIR = "ACS_122/"; (122 in port 4)
+#inidate = "20241128"; # Jday 334-337
+#enddate = "20241202";
+#WAPhour = "008";
 
-
-UWAY_WAP_SUBDIR = "/";
-inidate = "20241129"; # Jday 333 is 28th Nov 2024
-enddate = "20241130";
-WAPhour = "008";
+#UWAY_WAP_SUBDIR = "ACS_167/";
+#inidate = "20241202"; # Jday 337 onwards (day we switched out 167 and 122 in port 4)
+#enddate = "20241203";
+#WAPhour = "03";
 
 #Step 1: `dark_counts_BB3' - run 1
 #UWAY_WAP_SUBDIR = "dark_counts_BB3/";
@@ -47,60 +44,57 @@ WAPhour = "008";
 #WAPhour = "007";
 #WAPhour = "010";
 
-# Step 2:
-UWAY_WAP_SUBDIR = "/";
-inidate = "20241128"; # Jday 333 is 28th Nov 2024
-enddate = "20241130";
+UWAY_WAP_SUBDIR = "ACS_167/";
+inidate = "20241128"; # Jday 337 onwards (day we switched out 167 and 122 in port 4)
+enddate = "20241203";
+WAPhour = "03";
 
 
 % Parameters specific for Underway plotting/processing
 % (this will change depending on specific section fo the cruise)
 % Setup to automatically change based on UWAY_WAP_SUBDIR
-%
+
 % Implemented instruments to select from are
 % {"ctd","acs","bb3","cstar","acs2","ac9","clam"}
-if strcmp (UWAY_WAP_SUBDIR, "ACS_both/") == 1 % # case with 2 acs instruments - start of cruise
-     # dh8_instruments = {"bb3", "ctd", "acs", "acs2"};  - full instrument list
-      dh8_instruments = {"bb3", "ctd", "acs", }; # - neglecting 167, as it was not used for rest of cruiset
-      dh8_ports = {1,2,4};
-     # Serial numbers are mainly needed for acs and ac9 config files, leave blank for other instruments
-     # dh8_serialnumber = {1173, [], 167, 122};
-     dh8_serialnumber = {1173, [], 122};
-elseif strcmp(UWAY_WAP_SUBDIR, "dark_counts_BB3/") == 1 %
-     dh8_instruments = {"bb3", "ctd", "acs"};
-    % Ports must corresponds to same ports as in dh8_instruments
-     dh8_ports = {1,2,5};
-    % Serial numbers are mainly needed for acs and ac9 config files, leave blank for other instruments
-     dh8_serialnumber = {1173, [], 122};
-elseif strcmp(UWAY_WAP_SUBDIR, "/") == 1 % tjor: this is the `default" config (i.e. without subdirectories inside WAP_extracted)
+if strcmp (UWAY_WAP_SUBDIR, "ACS_both/") == 1 % # acs2 == 167, acs1 ==122
+      dh8_instruments = {"bb3", "ctd", "acs2", "acs" }; # -
+      dh8_ports = {1,2,3,4};
+      dh8_serialnumber = {1173, [], 122};
+elseif strcmp(UWAY_WAP_SUBDIR, "ACS_122/") == 1 % tjor: this is the `default" config (i.e. without subdirectories inside WAP_extracted)
         # dh8_instruments = {"bb3", "ctd", "acs", "acs2"};  - full instrument list
       dh8_instruments = {"bb3", "ctd", "acs", }; # - neglecting 167, as it was not used for rest of cruiset
       dh8_ports = {1,2,4};
-     # Serial numbers are mainly needed for acs and ac9 config files, leave blank for other instruments
-     # dh8_serialnumber = {1173, [], 167, 122};
+      dh8_serialnumber = {1173, [], 122};
+elseif strcmp(UWAY_WAP_SUBDIR, "ACS_167/") == 1 % tjor: this is the `default" config (i.e. without subdirectories inside WAP_extracted)
+        # dh8_instruments = {"bb3", "ctd", "acs", "acs2"};  - full instrument list
+      dh8_instruments = {"bb3", "ctd", "acs2", }; # - neglecting 167, as it was not used for rest of cruiset
+      dh8_ports = {1,2,4};
+      dh8_serialnumber = {1173, [], 122};
+elseif strcmp(UWAY_WAP_SUBDIR, "dark_counts_BB3/") == 1 %
+     dh8_instruments = {"bb3", "ctd", "acs"};
      dh8_serialnumber = {1173, [], 122};
+
 endif
 %-----------------------------
 
 %-----------------------------
 % Paths
-# MAIN_PATH = "/users/rsg/tjor/scratch_network/AMT_underway/AMT27/";
-#MAIN_PATH = "/data/datasets/cruise_data/active/DY151/";
-MAIN_PATH = "D:/AMT31/Optics_all/"
+# MAIN_PATH = "/data/datasets/cruise_data/active/JC272/";
+MAIN_PATH = "D:/AMT31/Optics_all/" # local path for laptop on cook
  fflush(stdout);
 % MAIN_PATH = [MAIN_PATH, "/Data/", CRUISE,"/"];     % Root directory for current AMT cruise
-PATH_DATA = 'Y:/JC272/Data/PML_optics/IOP_Underway/' % Uses ships network onboard James Cook
+PATH_DATA = 'Y:/JC272/Data/PML_optics/IOP_Underway/' % Data on ships network onboard James Cook
 PATH_SOURCE = [MAIN_PATH, "Source/"];% Directory with all source code
 OUT_PROC = [MAIN_PATH, "Processed/"];    % Output directory for processed oct and mat files
 OUT_FIGS = [MAIN_PATH, "Figures/"];      % Output directory for figures
 
 addpath([PATH_SOURCE]);
+
 %-----------------------------
 % Each directory will contain a series of subdirectories for each instrument
 % (e.g. Underway, Optics_rig, BB3_ctd etc. etc.)
-# OPTIC_DIR = "Optics_rig/"; - not taken on DY151
 UWAY_DIR = '/'
-# BB3_DIR = "BB3_ctd/"; - not present for DY151
+# BB3_DIR = "BB3_ctd/"; -
 # CTD_DIR = "Ship_CTD/"; - not present for DY151
 % Specific data subdirectories with Underway
 DATA_WAPPED = "WAP_Extracted/";
@@ -110,18 +104,15 @@ DATA_FLOW = "Flow/";
 %-----------------------------
 % calibration file dir
 D_CAL_FILES = [PATH_DATA , "/WAP_fileconversions/cals/"];
-
-
-%-----------------------------
 % ACS calibration file
-ACS_CAL_FILE_NAME = "acs122.dev"; % tjor -  2019 was latest callibration. For now, don't consider ACS167
+ACS_CAL_FILE_NAME = "acs122.dev"; %
 ACS_CAL_FILE_NAME_2 = "acs167.dev";
 %-----------------------------
 
 %-----------------------------
 % Ship"s system directories - these are specfic to a Discovery cruise metadata format (see AMT28 for JCR).
 #PATH_SHIP = [PATH_DATA, "Underway/ship_uway/"]; % note: some cruises store as: [PATH_DATA, "ship_uway/"]
-PATH_SHIP = ["Z:/Ship_Systems/Data/TechSAS/NetCDF/"] # network files on James cook
+PATH_SHIP = ["Z:/Ship_Systems/Data/TechSAS/NetCDF/"] # netcdf directory files on James cook
 PATH_GPS = [PATH_SHIP,'GPS/'];  %
 PATH_ATT = [PATH_SHIP,'ATT/'];  %
 PATH_DEPTH = [PATH_SHIP,'EA600/'];  %
@@ -131,7 +122,8 @@ PATH_TSG = [PATH_SHIP,'TSG/']; %
 #----------------------------
 # Input parameters for ship"s underway data
 # file paths for GGA function
-FUNC_GGA = []; # @rd_seatech_gga_discovery; # note: handle not used explictly for discovery processing - however, this was done to make similar format in input paramters to the JCR crusies.
+FUNC_GGA = []; # note: handle not used explictly for cookprocessing
+# - however, this was done to make similar format in input paramters to the JCR crusies.
 
 DIR_GPS = PATH_GPS;
 FN_GPS =  '*position-POSMV_GPS*';
@@ -144,7 +136,7 @@ FN_DEPTH = '*EA640_DEPTH*';
 
 
 # file paths for Oceanlogger function
-FUNC_OL = []; # @rd_oceanlogger_discovery;  # note: handle not used explictly for disco processing
+FUNC_OL = []; # note: handle not used explictly for cook processing
 
 DIR_TS = PATH_TS;
 FN_SURF = '*Surf-SURFMET*';
@@ -154,15 +146,11 @@ FN_LIGHT = '*Light-SURFMET*';
 DIR_TSG = PATH_TSG;
 FN_TSG = '*SBE45*';
 
-#----------------------------
-
-
 # Path-related variables for step2
 global DIR_STEP1 = [OUT_PROC UWAY_DIR "Step1/"];
 global DIR_STEP2 = [OUT_PROC UWAY_DIR "Step2/"];
 global DIR_STEP3 = [OUT_PROC UWAY_DIR "Step3/"];
 global FN_ROOT_STEP2 = [DIR_STEP2 "proc_optics_" lower(CRUISE) "_"];
-
 
 
 % Create path for saving figures
@@ -181,14 +169,10 @@ global DIR_FIGS = [OUT_FIGS];
 
 
 
-
-
-
-
 %-----------------------------
 % Parameters specific for Optics rig plotting/processing
 %
-% Wether cdt is saved as ASCII format (false for AMT26; true for AMT27)
+% Whether cdt is saved as ASCII format (false for AMT26; true for AMT27)
 ctdASCII = true;
 % Limits for temperature and salinity profiles
 Tlim = [0 20];

@@ -78,7 +78,7 @@ function step1par(jday)
                % TO DO: MOVE INTO input_parameters
                % Read from calibration file
                %-------------------------------------
-               acsNoWL2 = get_acs_NoWL(D_CAL_FILES, ACS_CAL_FILE_NAME);
+               acsNoWL2 = get_acs_NoWL(D_CAL_FILES, ACS_CAL_FILE_NAME_2);
                acs2.raw = bindata_new(strdate, acsNoWL2*2);
                acs2.anc = bindata_new(strdate, 5);
            case 'ac9'
@@ -96,6 +96,7 @@ function step1par(jday)
               % keyboard
        endswitch
    endfor
+
    % We assume that flow will always be there
    flow = bindata_new(strdate, 1);
    flow_v = bindata_new(strdate, 1);

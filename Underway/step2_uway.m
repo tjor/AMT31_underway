@@ -28,14 +28,14 @@
        jdays(ifile) = str2num(strsplit(fn_saved{ifile}, "."){1}(end-2:end)); % creates jday array-define
    endfor
 
-   dailyfiles = dir(  [DIR_STEP1 "*mat"]  ); % redundancy with line 27? (just different format)
+   dailyfiles = dir([DIR_STEP1 "*mat"]  ); % redundancy with line 27? (just different format)
 
    for iday = first_day: last_day
 
         disp(["\n---------" dailyfiles(iday).name "--------\n"] )
         fflush(stdout);
 
-      #  keyboard
+       # keyboard
 
        # initialize output structure with nans
            ini_out(dailyfiles(iday).name, jdays(iday));
@@ -46,7 +46,7 @@
 
 	% Discovery version of underway function (e.g. AMT27)
 
-        uway = step2h_underway_discovery_make_processed(jdays(iday), strdates(iday,:),
+        uway = step2h_underway_cook_make_processed(jdays(iday), strdates(iday,:),
                 FUNC_GGA,
                 DIR_GPS, FN_GPS,
                 DIR_ATT, FN_ATT,
@@ -54,7 +54,6 @@
                 DIR_TS, FN_SURF, FN_METDATA, FN_LIGHT,
                 DIR_TSG, FN_TSG);
 
-       #  keyboard
 
        %  JCR version of underway function (e.g. AMT28)
        % uway = step2h_ships_underway_amt_make_processed(jdays(iday), \
@@ -86,10 +85,14 @@
                    disp("Flow already processed")
 
                case "acs"
-                   step2a_acs_amt_make_processed(WAPvars.acs, dailyfiles(iday), iday, acs_lim, FORCE=0, "acs");
+                   if  sum(~isnan(WAPvars.acs.raw.med(:,1))) > 1;
+                       step2a_acs_amt_make_processed(WAPvars.acs, dailyfiles(iday), iday, acs_lim, FORCE=0, "acs");
+                   endif
 
                case "acs2"
-                   step2a_acs_amt_make_processed(WAPvars.acs2, dailyfiles(iday), iday, acs_lim, FORCE=0, "acs2"); % tjor: was not tested for acs2 on AMT 28
+                   if  sum(~isnan(WAPvars.acs2.raw.med(:,1)))> 1
+                       step2a_acs_amt_make_processed(WAPvars.acs2, dailyfiles(iday), iday, acs_lim, FORCE=0, "acs2");
+                   endif
 
                case "ac9"
                    step2a_ac9_amt_make_processed(WAPvars.ac9, dailyfiles(iday), ac9_lim, FORCE=0, flow);

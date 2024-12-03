@@ -14,20 +14,21 @@ function acsout = step2a_acs_amt_make_processed(acs, dailyfile, idays, acs_lim, 
    % bp_u: particulate backscattering uncertainty
    % N: number of data points in each hourly bin (typically 240 for AMT 28)
    % nn: number of data points that are not a NaN
-   % time: 
+   % time:
    % wv or wl: wavelengths (posisble redudancy?)
 
 
    global dac2dTS
    global Yt Ysa
-   global a b refNIR NIR 
+   global a b refNIR NIR
    global fval
    global errO
 
    % Global variables from step2
-   global FN_ROOT_STEP2 
-   global DIR_FIGS 
+   global FN_ROOT_STEP2
+   global DIR_FIGS
    global YYYY
+   global acs_wv
 
    close all
 
@@ -58,10 +59,10 @@ function acsout = step2a_acs_amt_make_processed(acs, dailyfile, idays, acs_lim, 
 
 
    % this is to skip ACs processng or when there are no ACs data
-   if (FORCE != 1 & (~exist('acs')) |  all(isnan(acs.raw.med(:,1))))
-      keyboard
-      return     
-   endif
+  # if (FORCE != 1 & (~exist('acs')) |  all(isnan(acs.raw.med(:,1))))
+  #    keyboard
+  #    return
+   #endif
 
 
    % Apply ac-s QC
@@ -75,8 +76,8 @@ function acsout = step2a_acs_amt_make_processed(acs, dailyfile, idays, acs_lim, 
 
    n_wv = length(acs.awl);
 
-   
-   
+
+
    % Determine times for filtered and unfiltered measurements to be used in
    % calculating calibration independent particle properties
    % Select only times that we have data logged for
@@ -89,10 +90,10 @@ function acsout = step2a_acs_amt_make_processed(acs, dailyfile, idays, acs_lim, 
 
    i_fl_med = (ismember(tmp_time_min, [5]) & tmp_sched) ;  % assign index to filtered times to be used for correction            %<<<====== CHANGE HERE
 
-   
-   
 
-   %take median value of the xTF filtered times without using any loop   
+
+
+   %take median value of the xTF filtered times without using any loop
    xTF = 8;  % how many 0.2um filtered points we have
    n_wv = length(acs.awl);
 
@@ -126,27 +127,27 @@ function acsout = step2a_acs_amt_make_processed(acs, dailyfile, idays, acs_lim, 
    % Linear interpolation over the course of the day between filtered measurements and their uncertainties
    acs.afilt_i = interp1(time(i_fl_med), med_fi_a, time, 'extrap'); # extrap is just to fill in the last hour of the day
    acs.cfilt_i = interp1(time(i_fl_med), med_fi_c, time, 'extrap');
-  
+
    acs.afilt_u_i = interp1(time(i_fl_med), med_fi_a_u, time, 'extrap');
    acs.cfilt_u_i = interp1(time(i_fl_med), med_fi_c_u, time, 'extrap');
-   
+
    % Define and fill [a,c]tot variables and their uncertainties
    acs.atot = nan(size(acs.raw.med(:,1:n_wv))); # these are the total absorption coeffiients (i.e.,  not the particulate absorption coeeffs)
    acs.ctot = nan(size(acs.raw.med(:,n_wv+1:end)));
    acs.atot(i_uf,:) = acs.raw.med(i_uf,1:n_wv);
    acs.ctot(i_uf,:) = acs.raw.med(i_uf,n_wv+1:end);
-   
+
    acs.atot_u = nan(size(acs.raw.prc(:,1:n_wv)));
    acs.ctot_u = nan(size(acs.raw.prc(:,n_wv+1:end)));
    acs.atot_u(i_uf,:) = acs.raw.prc(i_uf,1:n_wv) ./ sqrt(acs.raw.N(i_uf,1:n_wv)) ; % note that I am dividing the uncertainty by sqrt(N)
    acs.ctot_u(i_uf,:) = acs.raw.prc(i_uf,n_wv+1:end) ./ sqrt(acs.raw.N(i_uf,n_wv+1:end)); % note that I am dividing the uncertainty by sqrt(N)
-   
 
-   % compute approximate coefficient of variation within the binning time 
+
+   % compute approximate coefficient of variation within the binning time
    if ~isfield(acs, 'a_cv')
       acs.a_cv = [acs.raw.std(:,1:n_wv)./acs.raw.mean(:,1:n_wv)];
       acs.c_cv = [acs.raw.std(:,n_wv+1:end)./acs.raw.mean(:,n_wv+1:end)];
-   else  
+   else
       acs.a_cv = [acs.a_cv; acs.raw.std(:,1:n_wv)./acs.raw.mean(:,1:n_wv)];
       acs.c_cv = [acs.c_cv; acs.raw.std(:,n_wv+1:end)./acs.raw.mean(:,n_wv+1:end)];
    endif
@@ -158,7 +159,7 @@ function acsout = step2a_acs_amt_make_processed(acs, dailyfile, idays, acs_lim, 
    % propagate uncertainties
    acs.ap_u = sqrt(acs.atot_u.^2 + acs.afilt_u_i.^2);
    acs.cp_u = sqrt(acs.ctot_u.^2 + acs.cfilt_u_i.^2);
-   
+
    % store number of points binned in each bin
    acs.N = acs.raw.N(:,1);
 
@@ -171,26 +172,26 @@ function acsout = step2a_acs_amt_make_processed(acs, dailyfile, idays, acs_lim, 
       plot(acs.raw.time-newT0+1, acs.raw.mean(:,iwv0), '.', 'MarkerSize', 6, 'linewidth', 0.5)
       plot(acs.raw.time-newT0+1, acs.raw.mean(:,iwv0)+acs.raw.prc(:,iwv0), '.', 'MarkerSize', 1, 'linewidth', 0.1)
       plot(acs.raw.time-newT0+1, acs.raw.mean(:,iwv0)-acs.raw.prc(:,iwv0), '.', 'MarkerSize', 1, 'linewidth', 0.1)
-      
+
       plot(acs.raw.time(i_fl)-newT0+1, acs.raw.mean(i_fl,iwv0), 'ro', 'linewidth', 0.5)
       plot(acs.raw.time(i_fl)-newT0+1, acs.raw.mean(i_fl,iwv0)+acs.raw.prc(i_fl,iwv0), 'r.', 'linewidth', 0.1)
       plot(acs.raw.time(i_fl)-newT0+1, acs.raw.mean(i_fl,iwv0)-acs.raw.prc(i_fl,iwv0), 'r.', 'linewidth', 0.1)
-      
+
       plot(acs.raw.time-newT0+1, acs.afilt_i(:,iwv0), 'k', 'linewidth', 0.5)
       plot(acs.raw.time-newT0+1, acs.afilt_u_i(:,iwv0), 'k', 'linewidth', 0.1)
       plot(acs.raw.time-newT0+1, acs.afilt_u_i(:,iwv0), 'k', 'linewidth', 0.1)
-      
+
       plot(acs.raw.time-newT0+1, acs.ap(:,iwv0)+.2, 'mo', 'MarkerSize', 2, 'linewidth', 0.5)
       plot(acs.raw.time-newT0+1, acs.ap(:,iwv0)+acs.ap_u(:,iwv0)+.2, 'm.', 'MarkerSize', 1, 'linewidth', 0.1)
       plot(acs.raw.time-newT0+1, acs.ap(:,iwv0)-acs.ap_u(:,iwv0)+.2, 'm.', 'MarkerSize', 1, 'linewidth', 0.1)
    %axis([188 189 0 .25])
    set(gca, 'ylim', acs_lim);
    title('raw a_p')
-   hold off
 
-   if acstype == 'acs'
+
+   if length(acstype) == 3 # acs
        fnout = [DIR_FIGS 'raw_ap_' dailyfile.name(end-6:end-4)  '.png'];
-   elseif acstype == 'acs2'
+   elseif length(acstype) == 4 # acs2
        fnout = [DIR_FIGS 'raw_ap_acs2_' dailyfile.name(end-6:end-4)  '.png'];
    endif
    print('-dpng', fnout)
@@ -206,11 +207,12 @@ function acsout = step2a_acs_amt_make_processed(acs, dailyfile, idays, acs_lim, 
    %axis([188 189 0 .25])
    set(gca, 'ylim', acs_lim);
    title('raw c_p')
-   hold off    
+   hold off
 
-   if acstype == 'acs'
+
+   if length(acstype) == 3 # acs
        fnout = [DIR_FIGS 'raw_cp_' dailyfile.name(end-6:end-4)  '.png'];
-   elseif acstype == 'acs2'
+   elseif length(acstype) == 4 # acs2
        fnout = [DIR_FIGS 'raw_cp_acs2_' dailyfile.name(end-6:end-4)  '.png'];
    endif
    print('-dpng', fnout)
@@ -221,9 +223,9 @@ function acsout = step2a_acs_amt_make_processed(acs, dailyfile, idays, acs_lim, 
    % HP: the longer portion of the spectrum (LPS) is the correct one
    % use the first two lambdas of the LPS to linearly predict to the last value of the shorter portion
    % of the spectrum (SPS)
-   %    
+   %
    % <===========================================>>> NEED TO FIX THIS LATER ON <<<===========================================
-   %    
+   %
    %for beam-c the first wl of the LPS is at position 36 (565.2 nm)
    % keyboard
    %      wv1 = 36;
@@ -234,16 +236,16 @@ function acsout = step2a_acs_amt_make_processed(acs, dailyfile, idays, acs_lim, 
    %     acs.step.cp.coeff(:,2) = acs.step.cp.v(:,1)-acs.cwl(:,wv1)*acs.step.cp.coeff(:,1);           %intercept
    %     acs.step.cp.pred = acs.step.cp.coeff(:,1)*acs.cwl(wv1-1) + acs.step.cp.coeff(:,2);   %predicted last wl of SPS
    %     acs.step.cp.diff = acs.step.cp.pred-acs.cp(:,wv1-1);   %difference (predicted - observed)
-   %     
+   %
    %     acs.cp_nostep = acs.cp;
    %     acs.cp_nostep(:,1:wv1-1) = acs.cp_nostep(:,1:wv1-1)+acs.step.cp.diff*ones(1,wv1-1);
-   %     
+   %
    %     acs.step.ap.v = acs.ap(:,wv1:wv2);  %these are the values of wl that we use to predict the last point of the SPS
    %     acs.step.ap.coeff(:,1) = (acs.step.ap.v(:,2)-acs.step.ap.v(:,1))/(acs.awl(wv2)-acs.awl(wv1));  %slope
    %     acs.step.ap.coeff(:,2) = acs.step.ap.v(:,1)-acs.awl(:,wv1)*acs.step.ap.coeff(:,1);           %intercept
    %     acs.step.ap.pred = acs.step.ap.coeff(:,1)*acs.awl(wv1-1) + acs.step.ap.coeff(:,2);   %predicted last wl of SPS
    %     acs.step.ap.diff = acs.step.ap.pred-acs.ap(:,wv1-1);   %difference (predicted - observed)
-   %     
+   %
    %     acs.ap_nostep = acs.ap;
    %     acs.ap_nostep(:,1:wv1-1) = acs.ap_nostep(:,1:wv1-1)+acs.step.ap.diff*ones(1,wv1-1);
 
@@ -255,16 +257,16 @@ function acsout = step2a_acs_amt_make_processed(acs, dailyfile, idays, acs_lim, 
    % ---GRG---
    % select only non-NaN points
    i_nn = ~isnan(acs.cp(:,1));
-   
+
    % ---GRG---
    % interpolate awl and cwl to match the band centers of a and c onto a common wavelength array (acs.wl)
-   acs.wl = [400:2:750];
+   acs.wl = [400:2:750]; # hardcoded
 
    %interpolate cp
    acs.int.cp = acs.int.cp_u = nan(size(acs.cp,1), length(acs.wl));
    acs.int.cp(i_nn,:) = interp1(acs.cwl, acs.cp_nostep(i_nn,:)', acs.wl, 'extrap')';
    acs.int.cp_u(i_nn,:) = interp1(acs.cwl, acs.cp_nostep_u(i_nn,:)', acs.wl, 'extrap')';
-   
+
    %interpolate ap
    acs.int.ap = acs.int.ap_u = nan(size(acs.ap,1), length(acs.wl));
    acs.int.ap(i_nn,:) = interp1(acs.awl, acs.ap_nostep(i_nn,:)', acs.wl, 'extrap')';    %NOTE that the first lambda od acs.awl and acs.cwl are > 400nm  => the first interpolated wv is =NaN
@@ -273,8 +275,8 @@ function acsout = step2a_acs_amt_make_processed(acs, dailyfile, idays, acs_lim, 
    % % ----GRG------
    %correction of for residual T-dependence (this is the correction described in the Slade et al 2010 paper)
    %find( abs(acs.int.ap(:,171)-acs.int.ap(:,152))>0 );
-   i_nn = find(~isnan(acs.int.ap(:,1))); # "1" is arbitrary and "nn" is just used to initialize arrays below 
-   
+   i_nn = find(~isnan(acs.int.ap(:,1))); # "1" is arbitrary and "nn" is just used to initialize arrays below
+
    acs.Tsb_corr.ap = nan(size(acs.int.ap)); # in "Tsb", "T" is for temperature, "s" for salinity and "b" is for scattering
    acs.Tsb_corr.cp = nan(size(acs.int.cp));
    acs.Tsb_corr.ap_u = nan(size(acs.int.ap));
@@ -292,7 +294,7 @@ function acsout = step2a_acs_amt_make_processed(acs, dailyfile, idays, acs_lim, 
       s_DTs_dw = zeros(length(i_nn),2);
 
       %   for iap=362:length(nn)  %use these spectra for example
-      for iap = 1:length(i_nn) 
+      for iap = 1:length(i_nn)
 
          [DTs(iap,:), aTbcorr, ap_err, cp_err] = T_sal_corr_0(acs, idays, i_nn, iap);
          iout = [idays, iap DTs(iap)];
@@ -300,11 +302,12 @@ function acsout = step2a_acs_amt_make_processed(acs, dailyfile, idays, acs_lim, 
          acs.Tsb_corr.ap(i_nn(iap),:) = aTbcorr;
          acs.Tsb_corr.ap_u(i_nn(iap),:) = ap_err;
 
-         if acstype == 'acs'
-             save iap.txt iout -ascii
-         elseif acstype == 'acs2'
-             save iap_acs2.txt iout -ascii
-         endif
+
+        # if length(acstype) == 3 # acs
+        #     save iap.txt iout -ascii
+        # elseif length(acstype) == 4 # acs2
+        #     save iap_acs2.txt iout -ascii
+        # endif
 
          %compute T-corrected beam-c (i.e. subtract from cp the DELTAap due to residual temperature difference)
          acs.Tsb_corr.cp(i_nn(iap),:) = acs.int.cp(i_nn(iap),:)     -dac2dTS(:,2)'*DTs(iap,1)  ; # first non-numbered equation on pg 1739 of Slade et al., 2010
@@ -314,14 +317,14 @@ function acsout = step2a_acs_amt_make_processed(acs, dailyfile, idays, acs_lim, 
 
       Ts = [Ts; DTs];
    else
-	   
+
       acs.Tsb_corr.ap = acs.int.ap;
       acs.Tsb_corr.cp = nan(size(acs.int.ap));
 
    endif
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-   %-----------------------------------    
+   %-----------------------------------
 
    %compute Tb-corrected scattering coefficient
    acs.Tsb_corr.bp = acs.Tsb_corr.cp - acs.Tsb_corr.ap;
@@ -331,21 +334,18 @@ function acsout = step2a_acs_amt_make_processed(acs, dailyfile, idays, acs_lim, 
    acs.Tsb_corr.nn = i_nn;
    acs.Tsb_corr.time = time;
    acs.Tsb_corr.wl = acs.wl;
-datevec(time(1))
+
    savefile = [FN_ROOT_STEP2 strsplit(dailyfile.name, "_"){end}];
 
    if exist(savefile, 'file')
       load(savefile);
-   endif
 
-   if acstype == 'acs'
+   if length(acstype) == 3 # acs
        out.acs = acs.Tsb_corr;
        out.acs.wv = acs.wl;
-
-   elseif acstype == 'acs2'
+   elseif length(acstype) == 4 # acs2
        out.acs2 = acs.Tsb_corr;
        out.acs2.wv = acs.wl;
-
    endif
 
    save('-v6', savefile , 'out' )
@@ -362,6 +362,8 @@ datevec(time(1))
    endif
 
 end
+
+
 
 
 

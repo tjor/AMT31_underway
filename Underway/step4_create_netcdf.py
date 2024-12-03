@@ -11,14 +11,14 @@ import ipdb
 
 
 def main(amt_n, amt_y):
-    pathin = '../../Processed/Underway/Step3/'
+    pathin = '../../Processed/Step3/'
     # pathin = '../../../AMT%s/Processed/Underway/Step3/' % amt_n
     # pathin = '/data/datasets/cruise_data/active/AMT%s/OSU/Optics/AMT%s_source/m/' % (amt_n,amt_n)
     # pathin = '../../Processed/Underway/Step3/'
     fname = 'amt%s_optics.mat' % amt_n
     fullname = os.path.join(pathin,fname)
 
-    # Check if file exists
+     # Check if file exists
     if not os.path.isfile(fullname):
         print('File %s do not exists!!!!' % fullname)
         ipdb.set_trace()
@@ -37,6 +37,7 @@ def main(amt_n, amt_y):
 
     # Get all the first level keys
     amtkeys = list(amt.dtype.fields.keys())
+
 
     # Check if time is there where it should be
     if 'time' not in amtkeys:
@@ -61,7 +62,8 @@ def main(amt_n, amt_y):
     ds['time'].attrs = {'time zone' : 'UTC'}
     ds.time.encoding['units'] = "seconds since 1970-01-01 00:00:00"
     ds.time.encoding['calendar'] = "proleptic_gregorian"
-    
+   
+
     ds.assign_coords(wv =  amt['acs'].item()['wv'].item().squeeze() )
     ds['acs_wv'] = amt['acs'].item()['wv'].item().squeeze()
     ds['acs_wv'].attrs = {'units' : 'nanometers'}
@@ -70,6 +72,12 @@ def main(amt_n, amt_y):
         ds.assign_coords(wv =  amt['ac9'].item()['wv'].item().squeeze() )
         ds['ac9_wv'] = amt['ac9'].item()['wv'].item().squeeze()
         ds['ac9_wv'].attrs = {'units' : 'nanometers'}
+    
+    if 'acs2' in amtkeys:
+        ds.assign_coords(wv =  amt['acs2'].item()['wv'].item().squeeze() )
+        ds['acs2_wv'] = amt['acs2'].item()['wv'].item().squeeze()
+        ds['acs2_wv'].attrs = {'units' : 'nanometers'}
+    
     
     ds.assign_coords(bb9wv =  np.array([470., 532., 700.]) )
     ds['bb3_wv'] = np.array([470., 532., 700.]) 
@@ -88,6 +96,8 @@ def main(amt_n, amt_y):
 
     # Drop it from the list of keys
     amtkeys.remove('flow')
+
+
 
     # Add it to xrvars
     xrvars['flow'] = (['time'],flow)
@@ -112,6 +122,14 @@ def main(amt_n, amt_y):
             #xrcoords_attrs['wv_units'] = 'nanometers'
             # drop wv from list
             _varkeys.remove('wv')
+            
+        if ivar == 'acs2':
+            acswv = _var['wv'].item().squeeze()
+            ## Add them to xarray coordinates
+            #xrcoords['wv'] = acswv
+            #xrcoords_attrs['wv_units'] = 'nanometers'
+            # drop wv from list
+            _varkeys.remove('wv')
 
         # If ivar is ac9 need to pull out the wavelengths vector
         if ivar == 'ac9':
@@ -130,7 +148,9 @@ def main(amt_n, amt_y):
             #xrcoords_attrs[ivar+'wv_units'] = 'nanometers'
 
         # Get the various variables
+        print(_varkeys)
         for iivar in _varkeys:
+         
             _tmp = _var[iivar].item().squeeze()
 
             if len(_tmp.shape)>0:
@@ -141,11 +161,11 @@ def main(amt_n, amt_y):
                 inan = np.isnan(_tmp)
                 _tmp = np.ma.array(_tmp,mask=np.isnan(_tmp))
                 print('\t%s shape = ' % iivar,_tmp.shape)
-
+            
                 # Add it to the xrvars dictionary
                 if len(_tmp.shape)==1:
                     xrvars['%s_%s' % (ivar,iivar)] = (['time'],_tmp)
-
+                
                     if (ivar == "acs"):
                         if (iivar == "N"):
                             xrvars_attrs[ivar+'_'+iivar+"_units"] = 'number of binned measurements'
@@ -155,7 +175,18 @@ def main(amt_n, amt_y):
                                         ivar+'_'+iivar+'_equation' : 'chla = (acs.ap(:,wv676)-39/65.*acs.ap(:,wv650)-26/65*acs.ap(:,wv714))./0.014;',
                                         ivar+'_'+iivar+'_comment' : 'uncalibrated, not-debiased chl estimated from ACS ap'}
 
+                    elif (ivar == "acs2"):
+                       if (iivar == "N"):
+                           xrvars_attrs[ivar+'_'+iivar+"_units"] = 'number of binned measurements'
+        
+                       elif (iivar == "chl"):
+                           chlattrs2 = {ivar+'_'+iivar+'_units' : 'mg/m3',
+                                       ivar+'_'+iivar+'_equation' : 'chla = (acs.ap(:,wv676)-39/65.*acs.ap(:,wv650)-26/65*acs.ap(:,wv714))./0.014;',
+                                       ivar+'_'+iivar+'_comment' : 'uncalibrated, not-debiased chl estimated from ACS ap'}
+
+       
                     elif (ivar == "ac9"):
+                   
                         if (iivar == "N"):
                             xrvars_attrs[ivar+'_'+iivar+"_units"] = 'number of binned measurements'
 
@@ -196,10 +227,18 @@ def main(amt_n, amt_y):
                     else:
                         xrvars_attrs[ivar+'_'+iivar+'_units'] = ' '
 
-                elif len(_tmp.shape)==2:
+                elif len(_tmp.shape)==2: # selects spectral quantities
                     if ivar == 'acs':
                         xrvars['%s_%s' % (ivar,iivar)] = (['time','acs_wv'],_tmp)
                         xrvars_attrs['%s_%s_units' % (ivar,iivar)] = '1/m'
+                        
+                    if ivar == 'acs2':
+                            xrvars['%s_%s' % (ivar,iivar)] = (['time','acs_wv'],_tmp)
+                            xrvars_attrs['%s_%s_units' % (ivar,iivar)] = '1/m'
+                                
+                    if ivar == 'ac9':
+                            xrvars['%s_%s' % (ivar,iivar)] = (['time','ac9_wv'],_tmp)
+                            xrvars_attrs['%s_%s_units' % (ivar,iivar)] = '1/m'
 
                     elif ivar == 'bb3':
                         xrvars['%s_%s' % (ivar,iivar)] = (['time','bb3_wv'],_tmp)
@@ -215,6 +254,9 @@ def main(amt_n, amt_y):
         
         if 'acs_chl' in i:
             ds[i].attrs = chlattrs 
+            
+        elif 'acs2' in i:
+            ds[i].attrs = chlattrs2
 
         elif 'ac9_chl' in i:
             ds[i].attrs = ac9chlattrs 
@@ -228,16 +270,17 @@ def main(amt_n, amt_y):
 #        print('xrcoords: '+i)
 #        ds.coords[i].attrs = {'units' : xrcoords_attrs[i+'_units']}
 
+
     pathout = pathin
-    fnameout = 'amt%s_final.nc' % amt_n
+    fnameout = 'amt%s_iop_flowthrough.nc' % amt_n
     ds.to_netcdf(os.path.join(pathout,fnameout))
 
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--amt', default='29', help="Number of AMT cruise to process")
-    parser.add_argument('--year', default='2019', help="Year of AMT cruise to process")
+    parser.add_argument('--amt', default='31', help="Number of AMT cruise to process")
+    parser.add_argument('--year', default='2024', help="Year of AMT cruise to process")
     args = parser.parse_args()
     amt_n = args.amt
     amt_y = args.year
