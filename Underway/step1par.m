@@ -24,19 +24,6 @@ function step1par(jday)
    % Check if save file exists
    savefile = [savedir, fproc_name , doy, '.mat'];
 
-   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-   % Comment 2019 10 18 FN
-   % Not sure why this is here, or what function it has
-   % commented out!!!
-   %
-   % % Load savefile if it already exists
-   % if exist(savefile)
-   %   load(savefile)
-   % endif
-   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-   %fn1 = [lower(CRUISE) '_*' doy ];  %needed for reading the wapfiles in the next loop below
-   #fn1 = [WAP_ROOT '_*' doy  ];  % needed for reading the wapfiles in the next loop below - accounts for caseb
    fn1 = [WAP_ROOT '*' doy  ];  % ne
 
    % fflush(stdout);
@@ -49,14 +36,6 @@ function step1par(jday)
       [token, remainder] = strtok(wp(iwp).name,'.');
       wapfiles{iwp,1} = fn1
       wapfiles{iwp,2} = strtok(remainder,'.');
-
-      % exception to handle two file names on the same day when we swapped ac9 with cstar
-      %   ddd = str2num(doy);
-      %   HHH = str2num(strtok(remainder,'.'));
-      %   if ddd==270 & HHH==11
-      %       i270 = strfind(wp(iwp).name, '270')+2;
-      %       wapfiles{iwp,1} = [wp(iwp).name(1:i270)];
-      %   endif
    endfor
 
    %---GRG----
@@ -104,8 +83,8 @@ function step1par(jday)
    first_hour = 1
    last_hour = size(wapfiles,1)
 
-   for ihour = first_hour:last_hour  %reads each hour of data and assign the data to their specific structures
-   % for ihour = last_hour-1:last_hour  %reads each hour of data and assign the data to their specific structures
+   for ihour = first_hour :last_hour  % reads each hour of data and assign the data to their specific structures
+   % for ihour = last_hour-1:last_hour  % reads each hour of data and assign the data to their specific structures
 
       disp([fn1 ' ' (wapfiles{ihour,2})]);
       fflush(stdout);
@@ -221,34 +200,6 @@ function step1par(jday)
     save('-v6', savefile, 'WAPvars')
     disp('Done!')
 
-    % ------------------------------------------------------------------------
-    % In case UWAY_WAP_SUBDIR is not the root directory, core measurements need
-    % to be also saved on root directory
-    %-------------------------------------------------------------------------
-   % if ~strcmp(UWAY_WAP_SUBDIR,'/')
-    %    if strfind(UWAY_WAP_SUBDIR,'ACS')
-            % removed acs2 from variables
-      %      WAPvars = rmfield(WAPvars,'acs2');
-     %   elseif strfind(UWAY_WAP_SUBDIR,'AC9')
-            % removed ac9 from variables
-       %     WAPvars = rmfield(WAPvars,'ac9');
-        %endif
-        % New file name in root directory
-        %savedir = [OUT_PROC UWAY_DIR];
-        %savefile = [savedir, fproc_name , doy, '.mat'];
-        % Need to check if file exists
-        %if (exist(savefile,"file"))
-         %   tmp_WAPvars = load(savefile);
-            % Check if file is different by comparing the index of first available ctd measure
-          %  if min(find(~isnan(WAPvars.ctd.mean(:,1)))) != min(find(~isnan(tmp_WAPvars.WAPvars.ctd.mean(:,1))))
-                % If file not the same, then merge the two
-            %    WAPvars = merge_WAPvars(WAPvars,tmp_WAPvars.WAPvars);
-           % endif
-        %endif
-        %disp(['Saving root file ',savefile])
-        %save('-v6', savefile, 'WAPvars')
-        %disp('Done!')
-    %endif
 
     clear wapfiles
 
