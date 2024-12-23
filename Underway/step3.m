@@ -41,6 +41,7 @@ run('../input_parameters.m')
 % Initialize amt_optics strucure
 
 
+
 % acs
 amt_optics.acs.chl   = [];
 amt_optics.acs.ap    = [];
@@ -133,20 +134,23 @@ amt_optics.ctd.sal = [];
 din = DIR_STEP2;
 fn = dir([din "*mat"]);
 
+
 % Expected variables to be present:
 # - uway
 % - acs
 % - ac9
 % - bb3
 % - cstar
-% - flow
-% Check each time if they are present or not among the file variablesiacs_2
+% - flow% Check each time if they are present or not among the file variablesiacs_2
 
 
 for ifn = 1:size(fn,1)
 
+  #keyboard
+
     disp(["\n" fn(ifn).name])
     load([din fn(ifn).name]);
+
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % COMMENTED 2019 10 23 FN
@@ -306,6 +310,7 @@ for ifn = 1:size(fn,1)
    #     keyboard
     endif
 
+
 endfor
 
 #keyboard
@@ -368,23 +373,27 @@ save('-v6', [DIR_STEP3 lower(CRUISE) '_optics.mat'], lower(CRUISE))
 %
 % save -v6 amt22_chl.mat amt_chl
 %
-%
+keyboard
 %
 % %
 % %
 %  out = [amt_optics.time-t0 amt_optics.undwy.lat amt_optics.undwy.lon amt_optics.acs.ap(:,wv532) amt_optics.acs.cp(:,wv532) amt_optics.bb3.bbp(:,2)];
 %  save -ascii surface_optics_amt22.dat out
 
+#
 figure
 plot(amt_optics.uway.time-t0+1, log10(abs(amt_optics.acs2.chl)))
 hold on
 plot(amt_optics.uway.time-t0+1, log10(abs(amt_optics.acs.chl)),'r')
-xlim([333,338])
+xlim([350,360])
+ylim([-2,0])
 
-#figure
+
+figure
 plot(amt_optics.uway.lat, log10(abs(amt_optics.acs2.chl)))
 hold on
 plot(amt_optics.uway.lat, log10(abs(amt_optics.acs.chl)),'r')
+xlim([-35,-25])
 ylim([-2,0])
 
 #figure

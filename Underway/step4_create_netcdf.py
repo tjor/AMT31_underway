@@ -273,7 +273,7 @@ def main(amt_n, amt_y):
 
     pathout = pathin
     fnameout = 'amt%s_iop_flowthrough.nc' % amt_n
-    ds.to_netcdf(os.path.join(pathout,fnameout))
+    ds.to_netcdf(os.path.join(pathout,fnameout),mode='w')
 
 
 
