@@ -10,8 +10,8 @@ function tmp = rd_seatech_gga_cook(fn_gps, fn_att, fn_depth);
    pkg load netcdf
 
    # 1) gps
-   for inc = 1:1 % note - this loops over one file
-       ncfile = fn_gps;
+   for inc = 1:length(fn_gps); % note - this loops over one file
+       ncfile = fn_gps(inc);
        if inc == 1
 
            % Time must be first element of tmp!!!
@@ -37,10 +37,12 @@ function tmp = rd_seatech_gga_cook(fn_gps, fn_att, fn_depth);
        endif
    endfor
 
+   figure
+   plot(tmp.time)
 
    # 2) att
-   for inc = 1:1
-       ncfile = fn_att;
+   for inc = 1:length(fn_att);
+       ncfile = fn_att(inc);
        if inc == 1
            timeatt = ncread(ncfile,'time')+datenum([1899,12,30,0,0,0]);
            tmp.roll = ncread(ncfile,'roll');
@@ -59,13 +61,13 @@ function tmp = rd_seatech_gga_cook(fn_gps, fn_att, fn_depth);
    endfor
 
    % Interpolate ATT variables to GPS (not on same time)
-   tmp.roll = interp1(timeatt,tmp.roll,tmp.time);
-   tmp.pitch = interp1(timeatt,tmp.pitch,tmp.time);
-   tmp.heave = interp1(timeatt,tmp.heave,tmp.time);
+   tmp.roll = interp1(timeatt,tmp.roll,tmp.time,'extrap');
+   tmp.pitch = interp1(timeatt,tmp.pitch,tmp.time,'extrap');
+   tmp.heave = interp1(timeatt,tmp.heave,tmp.time,'extrap');
 
    # 3) depth
-   for inc = 1:1
-       ncfile = fn_depth;
+   for inc = 1:length(fn_depth);
+       ncfile = fn_depth(inc);
        if inc == 1
            tt = ncread(ncfile,'time');
            timed = ncread(ncfile,'time')+datenum([1899,12,30,0,0,0]);
@@ -82,8 +84,9 @@ function tmp = rd_seatech_gga_cook(fn_gps, fn_att, fn_depth);
    % Interpolate ATT variables to GPS (not on same time)
    % need to remove nans from timed
    igood = find(~isnan(timed));
-   tmp.depthm = interp1(timed(igood),tmp.depthm(igood),tmp.time);
+   tmp.depthm = interp1(timed(igood),tmp.depthm(igood),tmp.time,'extrap');
 
+     #keyboard
 
    %    % this is to deal with change in format through the cruise ?? tjor: maybe check with GrG?
    %    if length(tmp.time==1)

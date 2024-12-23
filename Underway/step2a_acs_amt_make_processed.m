@@ -15,7 +15,7 @@ function acsout = step2a_acs_amt_make_processed(acs, dailyfile, idays, acs_lim, 
    % N: number of data points in each hourly bin (typically 240 for AMT 28)
    % nn: number of data points that are not a NaN
    % time:
-   % wv or wl: wavelengths (posisble redudancy?)
+   % wv or wl: wavelengths (possibke redancy?)
 
 
    global dac2dTS
@@ -33,7 +33,6 @@ function acsout = step2a_acs_amt_make_processed(acs, dailyfile, idays, acs_lim, 
    close all
 
    tic
-
 
    acsoutap = [];
    acsoutcp = [];
@@ -55,7 +54,6 @@ function acsout = step2a_acs_amt_make_processed(acs, dailyfile, idays, acs_lim, 
    Ts_d = [];
    diffe = [];%this is the matrix where we store the step-difference in cp
    acdom = [];
-
 
 
    % this is to skip ACs processng or when there are no ACs data
@@ -156,6 +154,21 @@ function acsout = step2a_acs_amt_make_processed(acs, dailyfile, idays, acs_lim, 
    acs.ap = acs.atot - acs.afilt_i; # this is what is plotted in Fig 3a of Slade et al., 2010 (ap is particulate absorption)
    acs.cp = acs.ctot - acs.cfilt_i;
 
+   # These are plots
+   # hold on
+   #  figure
+   # plot((acs.atot(22*60:1:1440,:))')
+
+   # figure
+   # plot((acs.afilt_i(22*60:1:1440,:))')
+
+   # figure
+   # plot((acs.ap(21*60:1:1440,:))')
+   # keyboard
+   # figure
+   # plot((acs.ap(8*60:5:9*60,:))')
+   # keyboard
+
    % propagate uncertainties
    acs.ap_u = sqrt(acs.atot_u.^2 + acs.afilt_u_i.^2);
    acs.cp_u = sqrt(acs.ctot_u.^2 + acs.cfilt_u_i.^2);
@@ -164,7 +177,7 @@ function acsout = step2a_acs_amt_make_processed(acs, dailyfile, idays, acs_lim, 
    acs.N = acs.raw.N(:,1);
 
 
-   iwv0 = 30;  %(~540nm in the raw wavlenghts)
+   iwv0 = 30;  %(~540nm in the raw wavlenghts)   iwv0 = 50;  %(~540nm in the raw wavlenghts)
 
    figure(1, 'visible', 'off')
    clf
@@ -186,18 +199,81 @@ function acsout = step2a_acs_amt_make_processed(acs, dailyfile, idays, acs_lim, 
       plot(acs.raw.time-newT0+1, acs.ap(:,iwv0)-acs.ap_u(:,iwv0)+.2, 'm.', 'MarkerSize', 1, 'linewidth', 0.1)
    %axis([188 189 0 .25])
    set(gca, 'ylim', acs_lim);
-   title('raw a_p')
+   title('raw a_p_bin30')
+
+  if length(acstype) == 3 # acs
+       fnout = [DIR_FIGS 'raw_ap_' dailyfile.name(end-6:end-4)  '.png'];
+   elseif length(acstype) == 4 # acs2
+       fnout = [DIR_FIGS 'raw_ap_acs2_bin30' dailyfile.name(end-6:end-4)  '.png'];
+   endif
+   print('-dpng', fnout)
+
+
+   wv0 = 45;  %(~540nm in the raw wavlenghts)
+
+   figure#(2, 'visible', 'off')
+   clf
+   hold on
+      plot(acs.raw.time-newT0+1, acs.raw.mean(:,iwv0), '.', 'MarkerSize', 6, 'linewidth', 0.5)
+      plot(acs.raw.time-newT0+1, acs.raw.mean(:,iwv0)+acs.raw.prc(:,iwv0), '.', 'MarkerSize', 1, 'linewidth', 0.1)
+      plot(acs.raw.time-newT0+1, acs.raw.mean(:,iwv0)-acs.raw.prc(:,iwv0), '.', 'MarkerSize', 1, 'linewidth', 0.1)
+
+      plot(acs.raw.time(i_fl)-newT0+1, acs.raw.mean(i_fl,iwv0), 'ro', 'linewidth', 0.5)
+      plot(acs.raw.time(i_fl)-newT0+1, acs.raw.mean(i_fl,iwv0)+acs.raw.prc(i_fl,iwv0), 'r.', 'linewidth', 0.1)
+      plot(acs.raw.time(i_fl)-newT0+1, acs.raw.mean(i_fl,iwv0)-acs.raw.prc(i_fl,iwv0), 'r.', 'linewidth', 0.1)
+
+      plot(acs.raw.time-newT0+1, acs.afilt_i(:,iwv0), 'k', 'linewidth', 0.5)
+      plot(acs.raw.time-newT0+1, acs.afilt_u_i(:,iwv0), 'k', 'linewidth', 0.1)
+      plot(acs.raw.time-newT0+1, acs.afilt_u_i(:,iwv0), 'k', 'linewidth', 0.1)
+
+      plot(acs.raw.time-newT0+1, acs.ap(:,iwv0)+.2, 'mo', 'MarkerSize', 2, 'linewidth', 0.5)
+      plot(acs.raw.time-newT0+1, acs.ap(:,iwv0)+acs.ap_u(:,iwv0)+.2, 'm.', 'MarkerSize', 1, 'linewidth', 0.1)
+      plot(acs.raw.time-newT0+1, acs.ap(:,iwv0)-acs.ap_u(:,iwv0)+.2, 'm.', 'MarkerSize', 1, 'linewidth', 0.1)
+   %axis([188 189 0 .25])
+   set(gca, 'ylim', acs_lim);
+   title('raw a_p_bin45')
 
 
    if length(acstype) == 3 # acs
        fnout = [DIR_FIGS 'raw_ap_' dailyfile.name(end-6:end-4)  '.png'];
    elseif length(acstype) == 4 # acs2
-       fnout = [DIR_FIGS 'raw_ap_acs2_' dailyfile.name(end-6:end-4)  '.png'];
+       fnout = [DIR_FIGS 'raw_ap_acs2_bin45 ' dailyfile.name(end-6:end-4)  '.png'];
    endif
    print('-dpng', fnout)
 
 
-   figure(2, 'visible', 'off')
+   wv0 = 64;  %(~540nm in the raw wavlenghts)
+   figure#(3, 'visible', 'off')
+   clf
+   hold on
+      plot(acs.raw.time-newT0+1, acs.raw.mean(:,iwv0), '.', 'MarkerSize', 6, 'linewidth', 0.5)
+      plot(acs.raw.time-newT0+1, acs.raw.mean(:,iwv0)+acs.raw.prc(:,iwv0), '.', 'MarkerSize', 1, 'linewidth', 0.1)
+      plot(acs.raw.time-newT0+1, acs.raw.mean(:,iwv0)-acs.raw.prc(:,iwv0), '.', 'MarkerSize', 1, 'linewidth', 0.1)
+
+      plot(acs.raw.time(i_fl)-newT0+1, acs.raw.mean(i_fl,iwv0), 'ro', 'linewidth', 0.5)
+      plot(acs.raw.time(i_fl)-newT0+1, acs.raw.mean(i_fl,iwv0)+acs.raw.prc(i_fl,iwv0), 'r.', 'linewidth', 0.1)
+      plot(acs.raw.time(i_fl)-newT0+1, acs.raw.mean(i_fl,iwv0)-acs.raw.prc(i_fl,iwv0), 'r.', 'linewidth', 0.1)
+
+      plot(acs.raw.time-newT0+1, acs.afilt_i(:,iwv0), 'k', 'linewidth', 0.5)
+      plot(acs.raw.time-newT0+1, acs.afilt_u_i(:,iwv0), 'k', 'linewidth', 0.1)
+      plot(acs.raw.time-newT0+1, acs.afilt_u_i(:,iwv0), 'k', 'linewidth', 0.1)
+
+      plot(acs.raw.time-newT0+1, acs.ap(:,iwv0)+.2, 'mo', 'MarkerSize', 2, 'linewidth', 0.5)
+      plot(acs.raw.time-newT0+1, acs.ap(:,iwv0)+acs.ap_u(:,iwv0)+.2, 'm.', 'MarkerSize', 1, 'linewidth', 0.1)
+      plot(acs.raw.time-newT0+1, acs.ap(:,iwv0)-acs.ap_u(:,iwv0)+.2, 'm.', 'MarkerSize', 1, 'linewidth', 0.1)
+   %axis([188 189 0 .25])
+   set(gca, 'ylim', acs_lim);
+   title('raw a_p_bin64')
+
+   if length(acstype) == 3 # acs
+       fnout = [DIR_FIGS 'raw_ap_' dailyfile.name(end-6:end-4)  '.png'];
+   elseif length(acstype) == 4 # acs2
+       fnout = [DIR_FIGS 'raw_ap_acs2_bin64 ' dailyfile.name(end-6:end-4)  '.png'];
+   endif
+   print('-dpng', fnout)
+
+
+   figure(4, 'visible', 'off')
    clf
    hold on
       plot(acs.raw.time-newT0+1, acs.raw.mean(:,iwv0+n_wv), '.', 'MarkerSize', 6, 'linewidth', 0.5)
@@ -209,14 +285,6 @@ function acsout = step2a_acs_amt_make_processed(acs, dailyfile, idays, acs_lim, 
    title('raw c_p')
    hold off
 
-
-   if length(acstype) == 3 # acs
-       fnout = [DIR_FIGS 'raw_cp_' dailyfile.name(end-6:end-4)  '.png'];
-   elseif length(acstype) == 4 # acs2
-       fnout = [DIR_FIGS 'raw_cp_acs2_' dailyfile.name(end-6:end-4)  '.png'];
-   endif
-   print('-dpng', fnout)
-   %pause
 
    % ---GRG---                                     %<<<====== CAREFUL HERE
    % ARBITRARILY correct for step at ~550nm
@@ -285,7 +353,7 @@ function acsout = step2a_acs_amt_make_processed(acs, dailyfile, idays, acs_lim, 
    % store N of binned data points
    acs.Tsb_corr.N = acs.N;
 
-   if idays>0
+   if idays > 0
       %compute initial guess for the scattering coefficient b   (WE ASSUME no SALINITY CHANGES, FOR THE MOMENT)
       acs.int.bp = acs.int.cp - acs.int.ap; # eq 2 in Slade et al., 2010
 

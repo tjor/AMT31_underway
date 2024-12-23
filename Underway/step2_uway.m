@@ -30,12 +30,12 @@
 
    dailyfiles = dir([DIR_STEP1 "*mat"]  ); % redundancy with line 27? (just different format)
 
-   for iday = first_day: last_day
+
+   for iday = last_day -2 : last_day
 
         disp(["\n---------" dailyfiles(iday).name "--------\n"] )
         fflush(stdout);
 
-       # keyboard
 
        # initialize output structure with nans
            ini_out(dailyfiles(iday).name, jdays(iday));
@@ -44,8 +44,10 @@
         % (needed by bb3 processing)
         disp("\nprocessing SHIPs UNDERWAY data...");
 
-	% Discovery version of underway function (e.g. AMT27)
 
+
+	     % Cook version of underway function (AMT31)
+        if jdays(iday) > 354
         uway = step2h_underway_cook_make_processed(jdays(iday), strdates(iday,:),
                 FUNC_GGA,
                 DIR_GPS, FN_GPS,
@@ -53,20 +55,32 @@
                 DIR_DEPTH, FN_DEPTH,
                 DIR_TS, FN_SURF, FN_METDATA, FN_LIGHT,
                 DIR_TSG, FN_TSG);
+        elseif jdays(iday) < 354
+                uway = step2h_underway_cook_make_processed(jdays(iday), strdates(iday,:),
+                FUNC_GGA,
+                DIR_GPS, FN_GPS,
+                DIR_ATT, FN_ATT,
+                DIR_DEPTH, FN_DEPTH,
+                DIR_TS, FN_SURF, FN_METDATA, FN_LIGHT,
+                DIR_TSG, FN_TSG);
+        elseif  jdays(iday) == 354
+                uway = step2h_underway_cook_make_processed(jdays(iday), strdates(iday,:),
+                FUNC_GGA,
+                DIR_GPS, FN_GPS,
+                DIR_ATT, FN_ATT,
+                DIR_DEPTH, FN_DEPTH,
+                DIR_TS, FN_SURF, FN_METDATA, FN_LIGHT,
+                DIR_TSG, FN_TSG);
+        disp("day with multiple files - need to check output");
+         end
 
-
-       %  JCR version of underway function (e.g. AMT28)
-       % uway = step2h_ships_underway_amt_make_processed(jdays(iday), \
-        %        DIR_GPS, GLOB_GPS, FN_GPS, FNC_GPS, \
-         %       DIR_METDATA, GLOB_METDATA, FN_METDATA, FNC_METDATA)  ;%
         disp("...done");
-
 
         jday_str = dailyfiles(iday).name(end-6:end-4);
 
-
         % Load WAPvars from step1 output file
         load([DIR_STEP1 dailyfiles(iday).name]);
+
 
         % Idea is that flow is always there
         % (also needed by ac9 processing)
@@ -97,7 +111,6 @@
                case "ac9"
                    step2a_ac9_amt_make_processed(WAPvars.ac9, dailyfiles(iday), ac9_lim, FORCE=0, flow);
 
-
 ## uncomment this when you want to process BB3 data
 #               case "bb3"
 #                   step2b_bb3_amt_make_processed(WAPvars.bb3, uway, dailyfiles(iday), iday, bb_opt_lim, CRUISE);
@@ -113,14 +126,14 @@
 #                   keyboard
 
            endswitch
-
-
-
            disp("...done");
        endfor
        disp("\n");
        toc
    endfor
+
+ #  keyboard
+
 
  if PLOT == 1
    % Plot spectra from acs

@@ -16,6 +16,7 @@ function tmp = step2h_underway_cook_make_processed(doy, date_str, FUNC_GGA, DIR_
    global DIR_STEP1
    global FN_ROOT_STEP2
 
+
    % Filenames for meta data
    fn_gps = glob([DIR_GPS date_str FN_GPS]); % used in gga function
    fn_att = glob([DIR_ATT date_str FN_ATT]);
@@ -35,32 +36,59 @@ function tmp = step2h_underway_cook_make_processed(doy, date_str, FUNC_GGA, DIR_
    disp(fn_light{1})
    disp(fn_tsg{1})
 
+ #  keyboard
    disp('Processing ship''s underway data...')
 
-   % load meta data and gps files - files are passed as arguments
-   tmp1 = rd_seatech_gga_cook(fn_gps{1}, fn_att{1}, fn_depth{1}); # file reader same on disco and cook
 
+   # 20/12 - temp
+  # if doy ==355
+  #  fn_gps = fn_gps(2);
+  #  fn_depth = fn_depth(2);
+  #  fn_att = fn_att(2);
+
+   # fn_surf = fn_surf(2);
+   # fn_met = fn_met(2);
+   # fn_light = fn_light(2);
+    #fn_tsg = fn_tsg(2);
+ #  end
+
+  # if doy ==354
+  #     fn_gps = fn_gps(1:2);
+  #     fn_depth = fn_depth(1:2);
+  #     fn_att = fn_att(1:2);
+
+  #     fn_surf = fn_surf(1:2);
+  #     fn_met = fn_met(1:2);
+  #     fn_light = fn_light(1:2);
+  #     fn_tsg = fn_tsg(1:2);
+ #  endif
+
+   % load meta data and gps files - files are passed as arguments
+   tmp1 = rd_seatech_gga_cook(fn_gps, fn_att, fn_depth); # file reader same on disco and cook
    tmp2 = rd_oceanlogger_cook(fn_surf, fn_met, fn_light, fn_tsg); # cook sometimes has multiple files
 
 
    % create daily time vector with one record per minute of the day (24*60=1440) - note: lines 40-
    tmp.time = y0(YYYY)-1 + doy + [0:1440-1]'/1440; # time vector to match 1-min binned optics data
 
+  # keyboard
 
     %interpolate underway data to one-minute samples (and combine in single data structure)
     flds1 = fieldnames(tmp1);
     for ifld1=2:length(flds1) % index 2 - skips time field
          tmp.(flds1{ifld1}) = nan(size(tmp.time));
          if ~isempty(tmp1.time)
-            tmp.(flds1{ifld1}) = interp1(tmp1.time, tmp1.(flds1{ifld1}), tmp.time)
+            tmp.(flds1{ifld1}) = interp1(tmp1.time, tmp1.(flds1{ifld1}), tmp.time,'extrap')
          endif
     endfor
+
 
     flds2 = fieldnames(tmp2);
     for ifld2=2:length(flds2) % skips time field
          tmp.(flds2{ifld2}) = nan(size(tmp.time));
          if ~isempty(tmp2.time)
-            tmp.(flds2{ifld2}) = interp1(tmp2.time, tmp2.(flds2{ifld2}), tmp.time);
+                  flds2(ifld2)
+            tmp.(flds2{ifld2}) = interp1(tmp2.time, tmp2.(flds2{ifld2}), tmp.time,'extrap');
          endif
     endfor
 
